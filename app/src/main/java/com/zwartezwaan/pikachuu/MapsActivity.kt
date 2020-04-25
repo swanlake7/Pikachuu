@@ -1,12 +1,17 @@
 package com.zwartezwaan.pikachuu
 
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
@@ -21,6 +26,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        checkPerm()
+    }
+
+    //for dangerous permission (only needed for ver 23 or later)
+
+    var AccessLocation = 123
+    fun checkPerm(){
+        if(Build.VERSION.SDK_INT>=23){
+            if(ActivityCompat.checkSelfPermission(
+                    this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED)
+            {requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), AccessLocation )
+                return }
+        }
+        //otherwise older versions won't require further so just run the below func
+        getUserLocation()
+    }
+
+    fun getUserLocation(){
+        Toast.makeText(this, "location access on! ", Toast.LENGTH_LONG).show()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when(requestCode)
+        {AccessLocation ->
+            {
+             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {getUserLocation()}
+                else{Toast.makeText(this, "we could not access your location", Toast.LENGTH_LONG).show()  }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     /**
@@ -37,7 +78,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Add a marker in Sydney and move the camera
         val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        mMap.addMarker(MarkerOptions()
+            .position(sydney)
+            .title("Pikachuu")
+            .snippet("my location")
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu))
+        )
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f))
     }
 }
