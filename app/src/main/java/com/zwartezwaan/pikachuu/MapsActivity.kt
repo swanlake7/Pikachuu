@@ -1,6 +1,10 @@
 package com.zwartezwaan.pikachuu
 
+import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -47,6 +51,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun getUserLocation(){
         Toast.makeText(this, "location access on! ", Toast.LENGTH_LONG).show()
+            var mijnLocatie = MoiLocLis()
+            var locatieManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locatieManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f, mijnLocatie)
+            var moiThread= mijnDraad()
+        moiThread.start()
     }
 
     override fun onRequestPermissionsResult(
@@ -75,15 +84,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions()
-            .position(sydney)
-            .title("Pikachuu")
-            .snippet("my location")
-            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu))
-        )
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f))
     }
+
+var locatie:Location?=null
+    //get user location
+    inner class MoiLocLis:LocationListener{
+
+        constructor(){
+            locatie= Location("Start!!")
+            locatie!!.latitude= 0.0
+            locatie!!.longitude= 0.0
+        }
+        override fun onLocationChanged(p0: Location?) {
+           locatie= p0
+        }
+
+        override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun onProviderEnabled(provider: String?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun onProviderDisabled(provider: String?) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    inner class mijnDraad:Thread{
+        constructor():super(){}
+
+        override fun run(){
+            while(true){
+                try{
+                    runOnUiThread{
+                        mMap!!.clear()
+                        // Add a marker in Sydney and move the camera
+                        val sydney = LatLng(locatie!!.latitude, locatie!!.longitude)
+                        mMap.addMarker(MarkerOptions()
+                            .position(sydney)
+                            .title("Pikachuu")
+                            .snippet("my location")
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu))
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f))
+                    }
+                    Thread.sleep(1000)
+                }catch(ex:Exception){
+
+                }
+            }
+        }
+    }
+
+
+
+
+
 }
