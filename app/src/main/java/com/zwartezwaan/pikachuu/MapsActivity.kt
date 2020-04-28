@@ -51,7 +51,7 @@ var AccessLocation = 123
         Toast.makeText(this, "location access on! ", Toast.LENGTH_LONG).show()
 var mijnLocatie = MoiLocLis()
 var locatieManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            locatieManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f, mijnLocatie)
+         locatieManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f, mijnLocatie)
 var moiThread= mijnDraad()
         moiThread.start()
     }
@@ -84,11 +84,11 @@ var moiThread= mijnDraad()
     }
 
 var locatie:Location?=null
+
     //get user location
     inner class MoiLocLis:LocationListener{
-
         constructor(){
-            locatie= Location("Start!!")
+            locatie= Location("Start")
             locatie!!.latitude= 0.0
             locatie!!.longitude= 0.0 }
 
@@ -98,37 +98,37 @@ var locatie:Location?=null
         override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
             TODO("Not yet implemented") }
 
-        override fun onProviderEnabled(provider: String?) {
+        override fun onProviderEnabled(p0: String?) {
             TODO("Not yet implemented") }
 
-        override fun onProviderDisabled(provider: String?) {
+        override fun onProviderDisabled(p0: String?) {
             TODO("Not yet implemented") }
     }
 
 var oldLocatie:Location?=null
     inner class mijnDraad:Thread{
         constructor():super(){
-            oldLocatie = Location("Start! heh")
-            oldLocatie!!.longitude = 0.0
+            oldLocatie = Location("Start")
             oldLocatie!!.latitude = 0.0
+            oldLocatie!!.longitude= 0.0
         }
 
         override fun run(){
             while(true){
                 try{
                     if(oldLocatie!!.distanceTo(locatie) == 0f){ continue}
-                    
+                    oldLocatie=locatie
+                    //displays
                     runOnUiThread{
                         mMap!!.clear()
                         // Add a marker in Sydney and move the camera
                     // for displaying the user
 val sydney = LatLng(locatie!!.latitude, locatie!!.longitude)
-                        mMap.addMarker(MarkerOptions()
+                        mMap!!.addMarker(MarkerOptions()
                             .position(sydney)
                             .title("Pikachuu")
                             .snippet("my location")
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu))
-                        )
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu)))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f))
 
                     //for showing pokemons
@@ -138,24 +138,22 @@ val sydney = LatLng(locatie!!.latitude, locatie!!.longitude)
                                     var pLocatie = LatLng(newP.lat!!, newP.long!!)
                                     mMap!!.addMarker(MarkerOptions()
                                         .position(pLocatie)
-                                        .title(newP.name)
-                                        .snippet(newP.desc)
+                                        .title(newP.name!!)
+                                        .snippet(newP.desc!!)
                                         .icon(BitmapDescriptorFactory.fromResource(newP.img!!))
                                     )
                                 }
                         }
-
                     }
                     Thread.sleep(1000)
-                }catch(ex:Exception){
-
-                }
+                }catch(ex:Exception){}
             }
         }
     }
 
+    //list of pokemons from pokemony.kt
 var pokemonyList = ArrayList<Pokemony>()
-
+    //creates list of pokemons
     fun LoadPoky(){
         pokemonyList.add( Pokemony(R.drawable.kirby, "Kirbyy", "Kirrbyyy",
             30.0, 44.8737, -0.5546)  )
