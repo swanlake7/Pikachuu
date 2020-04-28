@@ -15,28 +15,26 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
-
     private lateinit var mMap: GoogleMap
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
+val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         checkPerm()
+        LoadPoky()
     }
-
     //for dangerous permission (only needed for ver 23 or later)
-
-    var AccessLocation = 123
+var AccessLocation = 123
     fun checkPerm(){
         if(Build.VERSION.SDK_INT>=23){
             if(ActivityCompat.checkSelfPermission(
@@ -51,10 +49,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun getUserLocation(){
         Toast.makeText(this, "location access on! ", Toast.LENGTH_LONG).show()
-            var mijnLocatie = MoiLocLis()
-            var locatieManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+var mijnLocatie = MoiLocLis()
+var locatieManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
             locatieManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f, mijnLocatie)
-            var moiThread= mijnDraad()
+var moiThread= mijnDraad()
         moiThread.start()
     }
 
@@ -72,7 +70,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -93,35 +90,39 @@ var locatie:Location?=null
         constructor(){
             locatie= Location("Start!!")
             locatie!!.latitude= 0.0
-            locatie!!.longitude= 0.0
-        }
+            locatie!!.longitude= 0.0 }
+
         override fun onLocationChanged(p0: Location?) {
-           locatie= p0
-        }
+           locatie= p0 }
 
         override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
-            TODO("Not yet implemented")
-        }
+            TODO("Not yet implemented") }
 
         override fun onProviderEnabled(provider: String?) {
-            TODO("Not yet implemented")
-        }
+            TODO("Not yet implemented") }
 
         override fun onProviderDisabled(provider: String?) {
-            TODO("Not yet implemented")
-        }
+            TODO("Not yet implemented") }
     }
 
+var oldLocatie:Location?=null
     inner class mijnDraad:Thread{
-        constructor():super(){}
+        constructor():super(){
+            oldLocatie = Location("Start! heh")
+            oldLocatie!!.longitude = 0.0
+            oldLocatie!!.latitude = 0.0
+        }
 
         override fun run(){
             while(true){
                 try{
+                    if(oldLocatie!!.distanceTo(locatie) == 0f){ continue}
+                    
                     runOnUiThread{
                         mMap!!.clear()
                         // Add a marker in Sydney and move the camera
-                        val sydney = LatLng(locatie!!.latitude, locatie!!.longitude)
+                    // for displaying the user
+val sydney = LatLng(locatie!!.latitude, locatie!!.longitude)
                         mMap.addMarker(MarkerOptions()
                             .position(sydney)
                             .title("Pikachuu")
@@ -129,6 +130,21 @@ var locatie:Location?=null
                             .icon(BitmapDescriptorFactory.fromResource(R.drawable.pikapikachu))
                         )
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f))
+
+                    //for showing pokemons
+                        for(p in 0..pokemonyList.size-1){
+                               var newP = pokemonyList[p]
+                                if(newP.caught==false){
+                                    var pLocatie = LatLng(newP.lat!!, newP.long!!)
+                                    mMap!!.addMarker(MarkerOptions()
+                                        .position(pLocatie)
+                                        .title(newP.name)
+                                        .snippet(newP.desc)
+                                        .icon(BitmapDescriptorFactory.fromResource(newP.img!!))
+                                    )
+                                }
+                        }
+
                     }
                     Thread.sleep(1000)
                 }catch(ex:Exception){
@@ -138,8 +154,25 @@ var locatie:Location?=null
         }
     }
 
+var pokemonyList = ArrayList<Pokemony>()
 
-
+    fun LoadPoky(){
+        pokemonyList.add( Pokemony(R.drawable.kirby, "Kirbyy", "Kirrbyyy",
+            30.0, 44.8737, -0.5546)  )
+        pokemonyList.add( Pokemony(R.drawable.itachii, "Itachi",
+            "The Hero We Do Not Deserve", 70.0, 34.4682, 135.5320)  )
+        pokemonyList.add( Pokemony(R.drawable.peach,
+            "Peach", "Princess Peach", 40.0, 59.2325, 18.0760)  )
+        pokemonyList.add( Pokemony(R.drawable.assassin,
+            "Assassin", "My DNA is the Future", 88.0,
+            31.6034, 34.8710)  )
+        pokemonyList.add( Pokemony(R.drawable.zelda,
+            "Princess Zelda", "Elf Princess of the Forest", 68.0, 44.4525, 26.0608)  )
+        pokemonyList.add( Pokemony(R.drawable.kyloren,
+            "Kylo Ren", "Prince of Darkness", 78.0, 62.0410, 73.3467)  )
+        pokemonyList.add( Pokemony(R.drawable.joker,
+            "The Joker", "Why So Seriouss?? ", 55.0, 40.8198, -73.8576)  )
+    }
 
 
 }
